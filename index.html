@@ -88,22 +88,26 @@
             {
                 question: 'Что бы вы получили, смешав водород и кислород?',
                 choices: ['А - Новый вид пиццы', 'Б - Чистую воду', 'В - Суперновую звезду', 'Г - Волшебный эликсир']
+            },
+            {
+                question: 'В3 ',
+                choices: ['a - франки', 'б - итальяне', 'в - словяне', 'г - такого нет']
             }
             // дополнительные вопросы здесь
         ];
         
-        let currentQuestion = 0;
+        let currentQuestion = -1;
         let questionActive = false;
+	let readyToNext = true;
 
         function showQuestionAndChoices() {
-            if (questionActive) {
+            if (readyToNext) {
                 // Если текущий вопрос уже завершен, переходим к следующему вопросу
                 if (document.getElementById('end-sound').paused) {
                     nextQuestion();
                 }
                 return;
             }
-
             questionActive = true;
 
             document.getElementById('question').style.display = 'block';
@@ -140,6 +144,7 @@
             if (currentQuestion < questions.length - 1) {
                 currentQuestion++;
                 questionActive = false;
+		readyToNext = false;
                 showQuestionAndChoices();
             }
         }
@@ -147,6 +152,7 @@
         function fullbar() {
             let bar = document.getElementById('progress-bar');
             bar.style.width = '100%';
+	    readyToNext = true;
         }
     </script>
 </body>
