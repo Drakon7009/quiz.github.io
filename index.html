@@ -16,9 +16,14 @@
         }
 
         #question {
-            display: none;
             margin-bottom: 20px;
             font-size: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            white-space: normal;
+            word-wrap: break-word;
+	    text-align: center;
         }
 
         #choices {
@@ -27,8 +32,10 @@
         }
 
         #choices div {
-            font-size: 25px;
-            text-align: center;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             white-space: normal;
             word-wrap: break-word;
         }
@@ -76,14 +83,29 @@
         let questions = [
             {
                 question: 'Название какого германского племени дало имя европейской стране? ',
-                choices: ['a - франки', 'б - итальано', 'в - словяне', 'г - такого нет']
+                choices: ['a - франки', 'б - итальяне', 'в - словяне', 'г - такого нет']
             },
+            {
+                question: 'Что бы вы получили, смешав водород и кислород?',
+                choices: ['А - Новый вид пиццы', 'Б - Чистую воду', 'В - Суперновую звезду', 'Г - Волшебный эликсир']
+            }
             // дополнительные вопросы здесь
         ];
         
         let currentQuestion = 0;
+        let questionActive = false;
 
         function showQuestionAndChoices() {
+            if (questionActive) {
+                // Если текущий вопрос уже завершен, переходим к следующему вопросу
+                if (document.getElementById('end-sound').paused) {
+                    nextQuestion();
+                }
+                return;
+            }
+
+            questionActive = true;
+
             document.getElementById('question').style.display = 'block';
             document.getElementById('choices').style.display = 'block';
 
@@ -109,7 +131,22 @@
             setTimeout(function() {
                 document.getElementById('end-sound').play();
                 document.getElementById('timer-sound').pause();
+                // Убираем эту строку, т.к. не хотим автоматически переходить к следующему вопросу
+                document.getElementById('end-sound').onended = fullbar();
             }, 20000); // время в миллисекундах
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                questionActive = false;
+                showQuestionAndChoices();
+            }
+        }
+        
+        function fullbar() {
+            let bar = document.getElementById('progress-bar');
+            bar.style.width = '100%';
         }
     </script>
 </body>
