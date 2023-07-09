@@ -5,10 +5,25 @@
         body {
             background-color: #111;
             color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        #question, #choices {
+        #question {
             display: none;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        #choices {
+            display: none;
+            text-align: center;
         }
 
         #progress-bar {
@@ -16,6 +31,8 @@
             background: #4CAF50;
             height: 30px;
             transition: width 20s linear;
+            position: fixed;
+            bottom: 0;
         }
 
         button {
@@ -37,10 +54,10 @@
 
     <div id="question"></div>
     <div id="choices">
-        <button>Вариант 1</button>
-        <button>Вариант 2</button>
-        <button>Вариант 3</button>
-        <button>Вариант 4</button>
+        <div>Вариант 1</div>
+        <div>Вариант 2</div>
+        <div>Вариант 3</div>
+        <div>Вариант 4</div>
     </div>
     <div id="progress-bar"></div>
 
@@ -64,9 +81,9 @@
             document.getElementById('choices').style.display = 'block';
 
             document.getElementById('question').innerText = questions[currentQuestion].question;
-            let buttons = document.getElementById('choices').getElementsByTagName('button');
-            for(let i = 0; i < buttons.length; i++) {
-                buttons[i].innerText = questions[currentQuestion].choices[i];
+            let choices = document.getElementById('choices').getElementsByTagName('div');
+            for(let i = 0; i < choices.length; i++) {
+                choices[i].innerText = questions[currentQuestion].choices[i];
             }
 
             let startSound = document.getElementById('start-sound');
