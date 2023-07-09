@@ -1,28 +1,92 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Video Player</title>
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.6.8/plyr.css" />
-</head>
-<body>
-
-<video id="myVideo" controls crossorigin playsinline>
-  <source src="video1.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
-<script src="https://cdn.plyr.io/3.6.8/plyr.polyfilled.js"></script>
-<script>
-    var player = new Plyr('#myVideo');
-    var isSecondVideo = false;
-
-    player.on('click', function() {
-        if (!isSecondVideo) {
-            player.source = { type: 'video', sources: [{ src: 'video2.mp4', type: 'video/mp4' }] };
-            isSecondVideo = true;
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
         }
-    });
-</script>
 
+        #question, #choices {
+            display: none;
+        }
+
+        #progress-bar {
+            width: 100%;
+            background: #4CAF50;
+            height: 30px;
+            transition: width 20s linear;
+        }
+
+        button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body onclick="showQuestionAndChoices()">
+
+    <div id="question"></div>
+    <div id="choices">
+        <button>Вариант 1</button>
+        <button>Вариант 2</button>
+        <button>Вариант 3</button>
+        <button>Вариант 4</button>
+    </div>
+    <div id="progress-bar"></div>
+
+    <audio id="start-sound" src="start.mp3" preload="auto"></audio>
+    <audio id="timer-sound" src="timer.mp3" preload="auto"></audio>
+    <audio id="end-sound" src="end.mp3" preload="auto"></audio>
+
+    <script>
+        let questions = [
+            {
+                question: 'Ваш вопрос здесь',
+                choices: ['Ответ 1', 'Ответ 2', 'Ответ 3', 'Ответ 4']
+            },
+            // дополнительные вопросы здесь
+        ];
+        
+        let currentQuestion = 0;
+
+        function showQuestionAndChoices() {
+            document.getElementById('question').style.display = 'block';
+            document.getElementById('choices').style.display = 'block';
+
+            document.getElementById('question').innerText = questions[currentQuestion].question;
+            let buttons = document.getElementById('choices').getElementsByTagName('button');
+            for(let i = 0; i < buttons.length; i++) {
+                buttons[i].innerText = questions[currentQuestion].choices[i];
+            }
+
+            let startSound = document.getElementById('start-sound');
+            startSound.play();
+            startSound.onended = function() {
+                startTimer();
+            };
+        }
+
+        function startTimer() {
+            let bar = document.getElementById('progress-bar');
+            bar.style.width = '0%';
+
+            document.getElementById('timer-sound').play();
+
+            setTimeout(function() {
+                document.getElementById('end-sound').play();
+                document.getElementById('timer-sound').pause();
+            }, 20000); // время в миллисекундах
+        }
+    </script>
 </body>
 </html>
