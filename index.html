@@ -78,6 +78,8 @@
     <audio id="start-sound" src="start.mp3" preload="auto"></audio>
     <audio id="timer-sound" src="timer.mp3" preload="auto"></audio>
     <audio id="end-sound" src="end.mp3" preload="auto"></audio>
+    <audio id="betweenQuestionsSound" src="between.mp3" preload="auto"></audio>
+
 
     <script>
         let questions = [
@@ -106,7 +108,7 @@
         choices: ["А) 0-600", "Б) 601-1200", "В) 1201-1500", "Г) Более 1501"],
     },
     {
-        question: "Какую сумму нужно накопить, чтобы официально стать миллионером?",
+        question: "Какую сумму нужно накопить, чтобы официально стать милионером?",
         choices: ["А) 500 000 долларов", "Б) 1 миллион долларов", "В) Нереально стать миллионером", "Г) Что?"],
     },
     {
@@ -217,14 +219,17 @@
                 document.getElementById('timer-sound').pause();
                 // Убираем эту строку, т.к. не хотим автоматически переходить к следующему вопросу
                 document.getElementById('end-sound').onended = fullbar();
+             
             }, 20000); // время в миллисекундах
         }
 
         function nextQuestion() {
+        	document.getElementById('betweenQuestionsSound').pause();
+        	document.getElementById('betweenQuestionsSound').currentTime = 0;
             if (currentQuestion < questions.length - 1) {
                 currentQuestion++;
                 questionActive = false;
-		readyToNext = false;
+                	readyToNext = false;
                 showQuestionAndChoices();
             }
         }
@@ -232,8 +237,10 @@
         function fullbar() {
             let bar = document.getElementById('progress-bar');
             bar.style.width = '100%';
-	    readyToNext = true;
+            document.getElementById('betweenQuestionsSound').play();
+	       readyToNext = true;
         }
     </script>
 </body>
 </html>
+
