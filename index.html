@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <style>
         body {
             background-color: #111;
@@ -13,22 +14,30 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            overflow: hidden;
+            cursor: pointer;
         }
 
         #question {
             margin-bottom: 20px;
             font-size: 45px;
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             white-space: normal;
             word-wrap: break-word;
-	    text-align: center;
+            text-align: center;
+            padding: 20px;
+            max-width: 90%;
+            z-index: 2;
         }
 
         #choices {
             display: none;
             text-align: center;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
         }
 
         #choices div {
@@ -38,6 +47,12 @@
             align-items: center;
             white-space: normal;
             word-wrap: break-word;
+            margin: 10px 0;
+            padding: 15px;
+            width: 80%;
+            max-width: 800px;
+            transition: all 1s ease;
+            z-index: 1;
         }
 
         #progress-bar {
@@ -49,22 +64,33 @@
             bottom: 0;
         }
 
-        button {
-            background-color: #333;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            margin: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+        /* Анимационные классы */
+        .fade-out {
+            opacity: 0 !important;
+            transform: scale(0) !important;
+            pointer-events: none;
+        }
+        
+        .correct-answer {
+            position: fixed;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) scale(1.8) !important;
+            z-index: 100 !important;
+            color: #4CAF50 !important;
+            font-weight: bold !important;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.7) !important;
+            transition: all 1s ease !important;
         }
 
-        button:hover {
-            background-color: #555;
+        #start-screen {
+            font-size: 30px;
+            text-align: center;
+            padding: 20px;
         }
     </style>
 </head>
-<body onclick="showQuestionAndChoices()">
+<body>
 
     <div id="question"></div>
     <div id="choices">
@@ -79,27 +105,29 @@
     <audio id="timer-sound" src="timer.mp3" preload="auto"></audio>
     <audio id="end-sound" src="end.mp3" preload="auto"></audio>
     <audio id="betweenQuestionsSound" src="between.mp3" preload="auto"></audio>
-
+    <audio id="correct-sound" src="correct.mp3" preload="auto"></audio>
 
     <script>
-        let questions = [
+let questions = [
     {
         question: "Если все люди в мире внезапно станут дальтониками, как мы это обнаружим?",
         choices: [
             "А) Сравнив с прошлыми описаниями цветов",
-            "Б) Никак, ведь эталон исчез", // правильный
-            "В) С помощью приборов",
+            "Б) Никак, ведь эталон исчез",
+            "В) С помощью приборов", // правильный
             "Г) По разным оттенкам серого"
         ],
+        correctIndex: 2
     },
     {
         question: "Если утверждение 'Это предложение ложно' истинно, то что оно на самом деле означает?",
         choices: [
             "А) Оно истинно",
             "Б) Оно ложно",
-            "В) Оно одновременно и истинно, и ложно", // правильный
-            "Г) Оно не имеет смысла"
+            "В) Оно одновременно и истинно, и ложно",
+            "Г) Оно не имеет смысла" // правильный
         ],
+        correctIndex: 3
     },
     {
         question: "Зомби утверждает, что он не зомби. Что это значит с точки зрения эпифеноменализма?",
@@ -109,6 +137,7 @@
             "В) Его утверждение не имеет отношения к сознанию", // правильный
             "Г) Это парадокс, потому что зомби не может формулировать такие утверждения"
         ],
+        correctIndex: 2
     },
     {
         question: "Парадокс всеведущего бога: может ли Бог создать камень, который не сможет поднять? Что логически следует, если ответ «нет»?",
@@ -118,6 +147,7 @@
             "В) Это доказывает, что Бога не существует", // правильный
             "Г) Камень и Бог — одно и то же в этом контексте"
         ],
+        correctIndex: 2
     },
     {
         question: "В комнате находятся трое: один всегда говорит правду, второй всегда лжёт, третий отвечает случайно. Как определить, кто есть кто, задав каждому по одному вопросу?",
@@ -127,6 +157,7 @@
             "В) Невозможно за один вопрос",
             "Г) Надо задать парадоксальный вопрос каждому" // правильный
         ],
+        correctIndex: 3
     },
     {
         question: "Если корабль постепенно заменили все доски, тот ли это ещё корабль?",
@@ -136,6 +167,7 @@
             "В) Это зависит от скорости замены",
             "Г) Это философский вопрос без ответа" // правильный
         ],
+        correctIndex: 3
     },
     {
         question: "Если дерево падает в лесу, а рядом есть животное без слуха, был ли звук?",
@@ -145,6 +177,7 @@
             "В) Только если его записать",
             "Г) Зависит от определения звука" // правильный
         ],
+        correctIndex: 3
     },
     {
         question: "Если будущее неизбежно, есть ли у вас выбор?",
@@ -154,6 +187,7 @@
             "В) Выбор и есть часть предопределения", // правильный
             "Г) Это вопрос веры"
         ],
+        correctIndex: 2
     },
     {
         question: "Сколько ложных утверждений нужно для создания логически непротиворечивой теории?",
@@ -163,6 +197,7 @@
             "В) Любое количество, если логика не нарушена", // правильный
             "Г) Невозможно — ложь всегда порождает противоречие"
         ],
+        correctIndex: 2
     },
     {
         question: "В системе, где 1 + 1 = 10, сколько будет 2 × 2?",
@@ -172,6 +207,7 @@
             "В) 10",
             "Г) Зависит от базы числения" // правильный
         ],
+        correctIndex: 3
     },
     {
         question: "Можно ли назвать 'несуществующее слово' несуществующим словом?",
@@ -181,15 +217,17 @@
             "В) Только если его кто-то услышит",
             "Г) Это игра слов без смысла"
         ],
+        correctIndex: 0
     },
     {
         question: "Если только ваше сознание точно существует, как вы проверите, что кто-то другой не программа?",
         choices: [
-            "А) Никак, это недоказуемо", // правильный
+            "А) Никак, это недоказуемо",
             "Б) По аналогии с другими людьми",
-            "В) С помощью науки",
+            "В) С помощью науки", // правильный
             "Г) Вопрос бессмысленный"
         ],
+        correctIndex: 2
     },
     {
         question: "Как вы докажете, что у других людей есть сознание?",
@@ -199,6 +237,7 @@
             "В) С помощью томографии мозга",
             "Г) Вопрос некорректен"
         ],
+        correctIndex: 0
     },
     {
         question: "Если 1=5, 2=10, 3=15, 4=20, то чему равно 5?",
@@ -208,6 +247,7 @@
             "В) 30",
             "Г) 5" // правильный
         ],
+        correctIndex: 3
     },
     {
         question: "Если вы бежите со скоростью звука и крикнете, услышите ли вы свой голос?",
@@ -217,15 +257,17 @@
             "В) Услышу с задержкой",
             "Г) Только эхо"
         ],
+        correctIndex: 1
     },
     {
         question: "Кто был первым человеком, чей возраст точно известен?",
         choices: [
             "А) Адам",
             "Б) Мафусаил",
-            "В) Перывый египетский фараон",
+            "В) Первый египетский фараон",
             "Г) Это невозможно определить" // правильный
         ],
+        correctIndex: 3
     },
     {
         question: "Если все долги в мире будут погашены, что произойдёт с деньгами?",
@@ -235,6 +277,7 @@
             "В) Ничего",
             "Г) Появится дефляция"
         ],
+        correctIndex: 1
     },
     {
         question: "Почему смартфон никогда не покажет точное время?",
@@ -244,34 +287,41 @@
             "В) Задержка обработки", // правильный
             "Г) Все варианты верны"
         ],
+        correctIndex: 2
     },
+
+    // Майнкрафт-вопросы:
     {
         question: "Можно ли повесить картину на кактус?",
         choices: [
             "А) Да", // правильный
             "Б) Нет"
         ],
+        correctIndex: 0
     },
     {
-        question: "Если убить дракона динамитом активированным кнопкой, дадут ли ачивку?",
+        question: "Если убить дракона динамитом, активированным кнопкой, дадут ли ачивку?",
         choices: [
             "А) Да",
             "Б) Нет" // правильный
         ],
+        correctIndex: 1
     },
     {
-        question: "Если переименовать большого слизня и убить его, будут ли маленькие слизни переименованы?",
+        question: "Если переименовать большого слизня и убить его, будут ли переименованы маленькие слизни?",
         choices: [
             "А) Да", // правильный
             "Б) Нет"
         ],
+        correctIndex: 0
     },
     {
-        question: "Если переплавить адское дерево, получим ли древ. уголь?",
+        question: "Если переплавить адское дерево, получим ли древний уголь?",
         choices: [
             "А) Да",
             "Б) Нет" // правильный
         ],
+        correctIndex: 1
     },
     {
         question: "Можно ли создать голема под водой?",
@@ -279,13 +329,15 @@
             "А) Да",
             "Б) Нет" // правильный
         ],
+        correctIndex: 1
     },
     {
-        question: "Если кинуть пёрл в кристалл, получишь ли урон от взрыва?",
+        question: "Если кинуть эндер-пёрл в кристалл, получишь ли урон от взрыва?",
         choices: [
             "А) Да",
             "Б) Нет" // правильный
         ],
+        correctIndex: 1
     },
     {
         question: "Можно ли вылечить зомби-жителя зачарованным яблоком?",
@@ -293,6 +345,7 @@
             "А) Да",
             "Б) Нет" // правильный
         ],
+        correctIndex: 1
     },
     {
         question: "Можно ли заспавнить снеговика под водой?",
@@ -300,72 +353,206 @@
             "А) Да", // правильный
             "Б) Нет"
         ],
-    },
+        correctIndex: 0
+    }
 ];
+
         
         let currentQuestion = -1;
         let questionActive = false;
-	let readyToNext = true;
+        let readyToNext = true;
+        let animating = false;
+        let timerId;
+        let gameStarted = false;
+        let timerEnded = false;
 
-        function showQuestionAndChoices() {
-            if (readyToNext) {
-                // Если текущий вопрос уже завершен, переходим к следующему вопросу
-                if (document.getElementById('end-sound').paused) {
-                    nextQuestion();
-                }
+        const startScreen = document.getElementById('start-screen');
+        const questionElem = document.getElementById('question');
+        const choicesContainer = document.getElementById('choices');
+        const progressBar = document.getElementById('progress-bar');
+        const betweenSound = document.getElementById('betweenQuestionsSound');
+        const timerSound = document.getElementById('timer-sound');
+        const endSound = document.getElementById('end-sound');
+        const correctSound = document.getElementById('correct-sound');
+        const startSound = document.getElementById('start-sound');
+
+        function startGame() {
+            if (!gameStarted) {
+                gameStarted = true;
+                startScreen.style.display = 'none';
+                nextQuestion();
+            }
+        }
+
+        function handleClick() {
+            if (!gameStarted) {
+                startGame();
                 return;
             }
+            
+            // Если таймер закончился, но ответ ещё не анимирован
+            if (timerEnded && questionActive && !animating) {
+                showCorrectAnswer();
+                return;
+            }
+            
+            // Если готовы к следующему вопросу
+            if (readyToNext && !animating) {
+                nextQuestion();
+                return;
+            }
+        }
+
+        document.addEventListener('click', handleClick);
+
+        function nextQuestion() {
+            // Останавливаем и сбрасываем звуки «между вопросами» и «конца таймера»
+            betweenSound.pause();
+            betweenSound.currentTime = 0;
+            endSound.pause();
+            endSound.currentTime = 0;
+
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                questionActive = false;
+                readyToNext = false;
+                animating = false;
+                timerEnded = false;
+                
+                // Сбрасываем стили для каждого варианта
+                let choiceDivs = choicesContainer.getElementsByTagName('div');
+                for (let i = 0; i < choiceDivs.length; i++) {
+                    choiceDivs[i].classList.remove('fade-out', 'correct-answer');
+                    choiceDivs[i].style.opacity = '1';
+                    choiceDivs[i].style.transform = 'scale(1)';
+                    choiceDivs[i].style.position = '';
+                    choiceDivs[i].style.top = '';
+                    choiceDivs[i].style.left = '';
+                    choiceDivs[i].style.zIndex = '';
+                    choiceDivs[i].style.display = 'none';
+                }
+                
+                // Сбрасываем прогресс-бар мгновенно на 100%
+                progressBar.style.transition = 'none';
+                progressBar.style.width = '100%';
+                // Подождём один фрейм, чтобы браузер «принял» стиль без анимации
+                requestAnimationFrame(() => {
+                    // Включаем плавное убывание ширины при запуске таймера
+                    progressBar.style.transition = 'width 20s linear';
+                });
+                
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function showQuestion() {
             questionActive = true;
+            animating = false;
+            timerEnded = false;
 
-            document.getElementById('question').style.display = 'block';
-            document.getElementById('choices').style.display = 'block';
+            questionElem.style.display = 'block';
+            choicesContainer.style.display = 'flex';
 
-            document.getElementById('question').innerText = questions[currentQuestion].question;
-            let choices = document.getElementById('choices').getElementsByTagName('div');
-            for(let i = 0; i < choices.length; i++) {
-                choices[i].innerText = questions[currentQuestion].choices[i];
+            questionElem.innerText = questions[currentQuestion].question;
+            
+            let choiceDivs = choicesContainer.getElementsByTagName('div');
+            let questionChoices = questions[currentQuestion].choices;
+            
+            // Отображаем только нужное количество вариантов
+            for (let i = 0; i < questionChoices.length; i++) {
+                choiceDivs[i].innerText = questionChoices[i];
+                choiceDivs[i].style.display = 'flex';
             }
 
-            let startSound = document.getElementById('start-sound');
+            // Проигрываем звук старта, затем запускаем таймер
             startSound.play();
-            startSound.onended = function() {
+            startSound.onended = () => {
                 startTimer();
             };
         }
 
         function startTimer() {
-            let bar = document.getElementById('progress-bar');
-            bar.style.width = '0%';
+            // Теперь при смене ширины с 100% на 0% сработает плавная анимация (20s)
+            progressBar.style.width = '0%';
+            timerSound.currentTime = 0;
+            timerSound.play();
 
-            document.getElementById('timer-sound').play();
-
-            setTimeout(function() {
-                document.getElementById('end-sound').play();
-                document.getElementById('timer-sound').pause();
-                // Убираем эту строку, т.к. не хотим автоматически переходить к следующему вопросу
-                document.getElementById('end-sound').onended = fullbar();
-             
-            }, 20000); // время в миллисекундах
+            timerId = setTimeout(() => {
+                timerEnded = true;
+                timerSound.pause();
+                endSound.play();
+                // Запускаем «между вопросами», чтобы было что остановить при показе ответа
+                betweenSound.currentTime = 0;
+                betweenSound.play();
+            }, 20000);
         }
 
-        function nextQuestion() {
-        	document.getElementById('betweenQuestionsSound').pause();
-        	document.getElementById('betweenQuestionsSound').currentTime = 0;
-            if (currentQuestion < questions.length - 1) {
-                currentQuestion++;
-                questionActive = false;
-                	readyToNext = false;
-                showQuestionAndChoices();
+        function showCorrectAnswer() {
+            if (animating) return;
+            
+            animating = true;
+            questionActive = false; // Вопрос уже не «активный»
+            clearTimeout(timerId);
+            timerSound.pause();
+
+            // Останавливаем «музыку ожидания» сразу
+            betweenSound.pause();
+            betweenSound.currentTime = 0;
+
+            // Проигрываем звук правильного ответа
+            correctSound.currentTime = 0;
+            correctSound.play();
+            
+            let choiceDivs = choicesContainer.getElementsByTagName('div');
+            let correctIndex = questions[currentQuestion].correctIndex;
+            let questionChoices = questions[currentQuestion].choices;
+            
+            // Анимация: остальные варианты исчезают, правильный — масштабируется
+            for (let i = 0; i < questionChoices.length; i++) {
+                if (i === correctIndex) {
+                    let rect = choiceDivs[i].getBoundingClientRect();
+                    choiceDivs[i].style.position = 'fixed';
+                    choiceDivs[i].style.top = rect.top + 'px';
+                    choiceDivs[i].style.left = rect.left + 'px';
+                    
+                    setTimeout(() => {
+                        choiceDivs[i].classList.add('correct-answer');
+                    }, 10);
+                } else {
+                    choiceDivs[i].classList.add('fade-out');
+                }
             }
+            
+            // После завершения анимации даём пользователю возможность перейти к следующему
+            setTimeout(() => {
+                animating = false;
+                readyToNext = true;
+                // Если хотите снова запустить «между вопросами» после анимации, раскомментируйте:
+                // betweenSound.currentTime = 0;
+                // betweenSound.play();
+            }, 1000);
         }
-        
-        function fullbar() {
-            let bar = document.getElementById('progress-bar');
-            bar.style.width = '100%';
-            document.getElementById('betweenQuestionsSound').play();
-	       readyToNext = true;
+
+        function endGame() {
+            questionElem.style.display = 'none';
+            choicesContainer.style.display = 'none';
+            startScreen.style.display = 'block';
+            startScreen.innerText = "Вопросы закончились! Нажмите, чтобы начать заново";
+            gameStarted = false;
+            currentQuestion = -1;
+            readyToNext = true;
+            questionActive = false;
+
+            // Сбрасываем звуки
+            betweenSound.pause();
+            betweenSound.currentTime = 0;
+            timerSound.pause();
+            timerSound.currentTime = 0;
+            endSound.pause();
+            endSound.currentTime = 0;
         }
     </script>
 </body>
 </html>
-
